@@ -1,0 +1,104 @@
+.version-panel {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  border-top: 1px solid #0f3460;
+  max-height: 240px;
+}
+
+.version-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: #0f3460;
+  cursor: pointer;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.version-panel-header h3 {
+  font-size: 0.9rem;
+}
+
+.version-panel-body {
+  display: flex;
+  flex-direction: column;
+  padding: 10px 12px;
+  gap: 8px;
+  overflow: auto;
+  flex: 1;
+}
+
+.version-save-row {
+  display: flex;
+  gap: 6px;
+}
+
+.version-desc-input {
+  flex: 1;
+  padding: 5px 8px;
+  background: #0f3460;
+  border: 1px solid #1a4a80;
+  border-radius: 4px;
+  color: #e0e0e0;
+  font-size: 0.8rem;
+}
+
+.version-desc-input:focus {
+  outline: none;
+  border-color: #e94560;
+}
+
+.version-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow: auto;
+}
+
+.version-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  background: #0f1a2e;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.78rem;
+  border: 1px solid transparent;
+}
+
+.version-item:hover {
+  border-color: #1a4a80;
+}
+
+.version-num {
+  font-weight: 700;
+  color: #e94560;
+  min-width: 24px;
+}
+
+.version-info {
+  flex: 1;
+  overflow: hidden;
+}
+
+.version-desc {
+  color: #e0e0e0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.version-time {
+  color: #606080;
+  font-size: 0.7rem;
+}
+
+.no-versions {
+  font-size: 0.8rem;
+  color: #404060;
+  text-align: center;
+  padding: 8px;
+}
