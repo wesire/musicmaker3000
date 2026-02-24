@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import './App.css';
 import ContextualActions from './ContextualActions/ContextualActions';
+import ExplanationPanel from './ExplanationPanel/ExplanationPanel';
 import ProjectCreator from './ProjectCreator/ProjectCreator';
 import PromptFlow from './PromptFlow/PromptFlow';
 import Timeline from './Timeline/Timeline';
@@ -42,6 +43,7 @@ function App() {
         </div>
         <div className="right-panel">
           <PromptFlow />
+          <ExplanationPanel />
           <VersionPanel />
         </div>
       </main>

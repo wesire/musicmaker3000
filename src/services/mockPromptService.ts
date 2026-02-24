@@ -1,8 +1,9 @@
 import { createId } from '../models/factories';
-import type { GenerationPrompt, PromptResponse, PromptType, SelectionRange, Song } from '../models/types';
+import type { Bar, GenerationPrompt, PromptResponse, PromptType, SelectionRange, Song } from '../models/types';
 import { parsePrompt } from './promptParser';
 import { generateSong } from './harmonyGenerator';
 import { rewriteSelection } from './rewriteEngine';
+import { explainSelection } from './explanationEngine';
 
 const MOCK_DELAY = 300;
 
@@ -33,23 +34,39 @@ async function handleEditLocal(text: string, song: Song | null, selection?: Sele
   };
 }
 
-async function mockExplainSelection(selection?: SelectionRange): Promise<unknown> {
-  return {
-    items: [
-      {
-        id: createId(),
-        barPosition: selection?.start ?? { sectionIndex: 0, barIndex: 0 },
-        text: 'This chord progression uses a ii-V-I pattern, common in jazz.',
-        category: 'harmonic-function',
-      },
-      {
-        id: createId(),
-        barPosition: selection?.start ?? { sectionIndex: 0, barIndex: 0 },
-        text: 'The voice leading moves smoothly by step between chords.',
-        category: 'voice-leading',
-      },
-    ],
-  };
+async function mockExplainSelection(
+  song: Song | null,
+  selection?: SelectionRange,
+  text?: string,
+): Promise<unknown> {
+  if (!song || !selection) {
+    return {
+      selectionRange: selection ?? { start: { sectionIndex: 0, barIndex: 0 }, end: { sectionIndex: 0, barIndex: 0 } },
+      summary: 'Select a chord or bar range to receive a grounded harmonic explanation.',
+      breakdown: [],
+      substitutions: [],
+      uncertaintyNotices: [],
+    };
+  }
+
+  // Extract bars from the selection
+  const bars: Bar[] = [];
+  for (let si = selection.start.sectionIndex; si <= selection.end.sectionIndex; si++) {
+    const section = song.sections[si];
+    if (!section) continue;
+    const startBar = si === selection.start.sectionIndex ? selection.start.barIndex : 0;
+    const endBar   = si === selection.end.sectionIndex   ? selection.end.barIndex   : section.bars.length - 1;
+    for (let bi = startBar; bi <= endBar; bi++) {
+      if (section.bars[bi]) bars.push(section.bars[bi]);
+    }
+  }
+
+  const section    = song.sections[selection.start.sectionIndex];
+  const keyContext = section?.keyContext ?? song.keyContext;
+  const sectionId  = section?.id ?? createId();
+  const constraints = text?.trim() ? parsePrompt(text) : null;
+
+  return explainSelection(bars, keyContext, sectionId, selection, constraints);
 }
 
 async function mockReharmonise(text: string, selection?: SelectionRange): Promise<unknown> {
@@ -108,7 +125,7 @@ export async function sendPrompt(
       data = await handleEditLocal(text, currentSong ?? null, selection);
       break;
     case 'EXPLAIN_SELECTION':
-      data = await mockExplainSelection(selection);
+      data = await mockExplainSelection(currentSong ?? null, selection, text);
       break;
     case 'REHARMONISE':
       data = await mockReharmonise(text, selection);

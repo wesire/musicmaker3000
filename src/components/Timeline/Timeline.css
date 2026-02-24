@@ -121,3 +121,63 @@
 .chord-editor-input:focus {
   outline: none;
 }
+
+/* ── Overlay annotations ── */
+
+.bar-overlays {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  margin-top: 3px;
+}
+
+.bar-overlay-chip {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.overlay-rn {
+  font-size: 0.65rem;
+  color: #80a8e0;
+  font-style: italic;
+}
+
+.overlay-rn.uncertain {
+  color: #c08020;
+}
+
+.overlay-nashville {
+  font-size: 0.65rem;
+  color: #80d0a0;
+  font-weight: 600;
+}
+
+.overlay-fn {
+  font-size: 0.6rem;
+  padding: 0px 3px;
+  border-radius: 6px;
+  font-weight: 700;
+}
+
+.overlay-fn.fn-tonic       { background: #0a2a0a; color: #40b040; }
+.overlay-fn.fn-predominant { background: #2a2a0a; color: #b0b040; }
+.overlay-fn.fn-dominant    { background: #2a0a0a; color: #c05050; }
+.overlay-fn.fn-chromatic   { background: #1a0a2a; color: #a040b0; }
+.overlay-fn.fn-ambiguous   { background: #1a1a1a; color: #606060; }
+
+.bar-cadence-label {
+  font-size: 0.6rem;
+  color: #d0a040;
+  margin-top: 2px;
+  font-weight: 600;
+}
+
+.section-key-badge {
+  font-size: 0.68rem;
+  color: #80c0ff;
+  padding: 1px 6px;
+  border-radius: 8px;
+  background: #0a1e38;
+  border: 1px solid #1a3a5a;
+}

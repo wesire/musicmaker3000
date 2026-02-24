@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { createId } from '../models/factories';
 import type {
   EditLocalResult,
+  ExplanationResult,
   GenerateSongResult,
   GenerationPrompt,
   PromptType,
@@ -21,11 +22,14 @@ interface PromptState {
   pendingGenerateSongResult: GenerateSongResult | null;
   /** Structured result from the most recent successful local edit. */
   pendingEditLocalResult: EditLocalResult | null;
+  /** Grounded explanation result from the most recent EXPLAIN_SELECTION. */
+  pendingExplanationResult: ExplanationResult | null;
   openPromptPanel: (type: PromptType) => void;
   closePromptPanel: () => void;
   submitPrompt: (text: string, selection?: SelectionRange, currentSong?: Song | null) => Promise<void>;
   clearPrompts: () => void;
   clearPendingResults: () => void;
+  clearExplanationResult: () => void;
 }
 
 export const usePromptStore = create<PromptState>((set, get) => ({
@@ -36,6 +40,7 @@ export const usePromptStore = create<PromptState>((set, get) => ({
   promptType: 'GENERATE_SONG',
   pendingGenerateSongResult: null,
   pendingEditLocalResult: null,
+  pendingExplanationResult: null,
 
   openPromptPanel: (type) => set({ panelOpen: true, promptType: type }),
   closePromptPanel: () => set({ panelOpen: false }),
@@ -59,6 +64,7 @@ export const usePromptStore = create<PromptState>((set, get) => ({
       // Cache structured results for UI consumption
       let pendingGenerateSongResult = get().pendingGenerateSongResult;
       let pendingEditLocalResult    = get().pendingEditLocalResult;
+      let pendingExplanationResult  = get().pendingExplanationResult;
 
       if (promptType === 'GENERATE_SONG') {
         pendingGenerateSongResult = response.data as GenerateSongResult;
@@ -66,6 +72,8 @@ export const usePromptStore = create<PromptState>((set, get) => ({
       } else if (promptType === 'EDIT_LOCAL') {
         pendingEditLocalResult    = response.data as EditLocalResult;
         pendingGenerateSongResult = null;
+      } else if (promptType === 'EXPLAIN_SELECTION') {
+        pendingExplanationResult  = response.data as ExplanationResult;
       }
 
       set({
@@ -74,6 +82,7 @@ export const usePromptStore = create<PromptState>((set, get) => ({
         prompts: get().prompts.map((p) => (p.id === prompt.id ? updated : p)),
         pendingGenerateSongResult,
         pendingEditLocalResult,
+        pendingExplanationResult,
       });
     } catch {
       const updated: GenerationPrompt = { ...prompt, status: 'error' };
@@ -89,4 +98,6 @@ export const usePromptStore = create<PromptState>((set, get) => ({
 
   clearPendingResults: () =>
     set({ pendingGenerateSongResult: null, pendingEditLocalResult: null }),
+
+  clearExplanationResult: () => set({ pendingExplanationResult: null }),
 }));
