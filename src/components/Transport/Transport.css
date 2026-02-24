@@ -77,3 +77,50 @@
   background: #1a4a80;
   flex-shrink: 0;
 }
+
+/* ── Quality mode buttons ── */
+.quality-btn {
+  padding: 3px 9px;
+  background: #0f3460;
+  border: 1px solid #1a4a80;
+  border-radius: 4px;
+  color: #a0a0b0;
+  cursor: pointer;
+  font-size: 0.75rem;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.quality-btn.active {
+  background: #1a3a6a;
+  border-color: #4080c0;
+  color: #80c0ff;
+  font-weight: 600;
+}
+
+.quality-btn.pro {
+  border-color: #604090;
+  color: #c090ff;
+}
+
+.quality-btn.pro.active {
+  background: #2a1a4a;
+  border-color: #9060d0;
+  color: #d0a0ff;
+}
+
+/* ── Audition badge ── */
+.audition-badge {
+  font-size: 0.78rem;
+  color: #ffd060;
+  font-weight: 600;
+  padding: 2px 8px;
+  background: #2a1a00;
+  border: 1px solid #806000;
+  border-radius: 4px;
+}
+
+/* ── Transport status indicator ── */
+.transport-status--playing  { color: #60c080; }
+.transport-status--paused   { color: #a0c0ff; }
+.transport-status--stopped  { color: #606080; }
+

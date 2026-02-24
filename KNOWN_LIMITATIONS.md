@@ -17,7 +17,16 @@
 - `applyLocalEdit` replaces chord content only; bar ids, indexes, and time signatures are preserved from the original
 - No real AI integration (all generation remains rule-based / deterministic)
 
-## Phase 3: Explanation & Overlays
+## Phase 4: Playback Quality Upgrade & Arrangement/Voicing Engine
+- Voicing engine produces `PlaybackNoteEvent[]` but the mock playback engine does not yet consume it — audio preview remains beat-tick only
+- `Pro` quality mode UI is present but has no desktop/plugin backend; selecting it applies rich voicing settings only
+- Arrangement pattern and density controls affect `VoicingOptions` state and voicing engine output; they do not yet affect audible playback in the web build (full audio rendering requires a real Web Audio or native backend)
+- Humanization is deterministic (seeded pseudo-random); it is not truly stochastic
+- Guitar strum approximation is heuristic (fixed 0.05-beat offset per note); real strum timing would require per-instrument modeling
+- Rhythmic pattern uses a fixed offset array `[0, 1, 1.5, 2.5, 3]`; compound meters and custom rhythm patterns are not yet supported
+- Audition mode enables loop transport automatically but does not yet time-slice playback to the selected bar range — that requires loop-range integration with the mock engine
+- Per-track FX chain metadata (`ArrangementTrack`) is a placeholder schema; no FX routing exists yet
+
 - Explanation engine is fully rule-based and analysis-driven; it does not use an LLM backend
 - Substitution alternatives are heuristic (lighter/richer/smoother) based on scale degrees; voice-leading quality is not optimised
 - Style fit reasoning only triggers for a limited set of tag combinations (pop, jazz, folk, dreamy, rock)

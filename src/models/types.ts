@@ -189,3 +189,48 @@ export interface OverlaySettings {
   showNashvilleNumbers: boolean;
   showCadenceMarkers: boolean;
 }
+
+// ─── Phase 4: Arrangement / Voicing Engine ───────────────────────────────────
+
+/** How notes are spread across time for a chord event. */
+export type ArrangementPattern = 'block' | 'arpeggio' | 'pad' | 'strum' | 'rhythmic';
+
+/** How many chord tones are included in each voicing. */
+export type VoicingDensity = 'simple' | 'medium' | 'rich';
+
+/** Playback quality tier — controls preset selection and arrangement sophistication. */
+export type PlaybackQualityMode = 'sketch' | 'enhanced' | 'pro';
+
+/** Controls passed to the voicing / arrangement engine. */
+export interface VoicingOptions {
+  /** How many chord tones to include. */
+  density: VoicingDensity;
+  /** Middle octave for root placement (4 = C4 / middle C). */
+  octaveBase: number;
+  /** 0 = no humanization, 1 = maximum humanization. */
+  humanizeAmount: number;
+  /** Preferred chord inversion strategy. */
+  inversionPreference: 'root' | 'first' | 'second' | 'auto';
+  /** Temporal spread of notes within the chord event. */
+  pattern: ArrangementPattern;
+}
+
+/** A single synthesisable note event produced by the arrangement engine. */
+export interface PlaybackNoteEvent {
+  /** MIDI note number (0–127). C4 = 60. */
+  midiNote: number;
+  /** Beat position within the bar (1-indexed, matching ChordEvent.beat). */
+  startBeat: number;
+  /** Duration in beats. */
+  durationBeats: number;
+  /** MIDI velocity (0–127). */
+  velocity: number;
+}
+
+/** The full set of note events generated for a single bar. */
+export interface ArrangementResult {
+  barId: string;
+  notes: PlaybackNoteEvent[];
+  pattern: ArrangementPattern;
+  density: VoicingDensity;
+}
