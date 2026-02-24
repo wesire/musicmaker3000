@@ -38,3 +38,30 @@
 - Every Apply auto-saves a version in the **📜 Versions** panel
 - Click any version to revert to it
 - Use **Discard** in the AI panel to dismiss alternatives without applying
+
+## Phase 3: Explainable Harmony & Educational Overlays
+
+### Get a Grounded Harmonic Explanation
+1. Click a bar (or shift-click to extend the selection) in the timeline
+2. In the **Selection:** toolbar, click **💡 Explain**
+3. The **💡 Harmonic Explanation** panel appears in the right column with:
+   - A plain-language summary of the chord progression
+   - Per-chord breakdown: Roman numeral, harmonic function, tension role, cadence connections
+   - Cadence explanation (authentic, half, plagal, deceptive) when detected
+   - Style fit reasoning (when a prompt was previously submitted)
+   - Suggested alternatives (lighter, richer, smoother) with pros/cons
+   - Uncertainty notices for chromatic or ambiguous chords
+4. In the Explanation Panel, type a follow-up (e.g. `"make this less tense"`) and press Enter to submit an EDIT_LOCAL request while keeping the selection intact
+
+### Educational Overlays
+The **Overlays** toolbar appears at the top of the timeline with toggles for:
+- **Chords** — chord symbol labels (on by default)
+- **Roman #** — Roman numeral annotations per chord (e.g. `I`, `V/V`)
+- **Function** — harmonic function tag per chord (`T`=tonic, `P`=predominant, `D`=dominant, `C`=chromatic)
+- **Nashville #** — Nashville number notation (e.g. `1`, `5`, `2m`)
+- **Cadences** — cadence type markers at the end of phrases (e.g. `✓ auth`, `↑ half`, `↺ dec`)
+- **Sections** — section type badges and labels
+- **Key** — global key context in the timeline header
+
+Toggle any combination for a clean, uncluttered view.
+

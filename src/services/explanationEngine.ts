@@ -258,7 +258,12 @@ function buildSubstitutions(
 
   // 1. Lighter/diatonic: for borrowed chords suggest the diatonic version
   if (target.isBorrowed) {
-    const diatonicRN = target.romanNumeral.replace('°', '').toUpperCase();
+    // In a major-family key the diatonic version is typically the major form (uppercase);
+    // in a minor-family key the diatonic version uses the natural minor quality (lowercase for min/dim).
+    const strippedRN  = target.romanNumeral.replace(/[°+]/g, '');
+    const diatonicRN  = isMajFam
+      ? strippedRN.toUpperCase()            // major key: diatonic = major quality
+      : strippedRN.charAt(0).toLowerCase() + strippedRN.slice(1); // minor key: lowercase
     subs.push({
       id: createId(),
       originalChordId: target.chordId,

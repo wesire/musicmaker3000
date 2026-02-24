@@ -17,7 +17,8 @@ export default function ExplanationPanel() {
 
   async function handleFollowUp() {
     if (!followUp.trim()) return;
-    // Submit as EDIT_LOCAL so the follow-up edit reaches the rewrite engine
+    // Route follow-up text edits to EDIT_LOCAL so the rewrite engine can act on the
+    // current selection.  This intentional routing is noted in KNOWN_LIMITATIONS.md.
     const { openPromptPanel } = usePromptStore.getState();
     openPromptPanel('EDIT_LOCAL');
     await submitPrompt(followUp, selection ?? undefined, currentSong);

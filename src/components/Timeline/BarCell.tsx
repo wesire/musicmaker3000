@@ -22,10 +22,10 @@ function romanToNashville(rn: string): string {
   };
   const num = map[base];
   if (!num) return rn;
-  // Use lowercase for minor (original starts with lowercase)
-  const isMinor = rn[0] === rn[0].toLowerCase() && /[a-z]/.test(rn[0]);
+  // Lowercase Roman numeral first character indicates minor quality
+  const isMinor = /^[a-z]/.test(rn[0]);
   if (rn.includes('/')) {
-    const target = rn.split('/')[1].toUpperCase();
+    const target = rn.split('/')[1].replace(/[°+]/g, '').toUpperCase();
     const targetNum = map[target] ?? target;
     return `5/${targetNum}`;
   }
@@ -65,9 +65,6 @@ export default function BarCell({ bar, sectionIndex, barIndex, keyContext, caden
     chords.forEach((chord) => {
       updateChord(sectionIndex, barIndex, chord);
     });
-    if (chords.length === 0 && bar.chords.length > 0) {
-      // Clear by replacing - simplified: just update with empty placeholder
-    }
   }
 
   function handleCancel() {
