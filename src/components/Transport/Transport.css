@@ -1,0 +1,79 @@
+.transport {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 16px;
+  background: #0f1a2e;
+  border-top: 1px solid #0f3460;
+  overflow-x: auto;
+}
+
+.transport-section {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.transport-label {
+  font-size: 0.72rem;
+  color: #606080;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.transport-value {
+  font-size: 0.95rem;
+  color: #e0e0e0;
+  font-variant-numeric: tabular-nums;
+  min-width: 36px;
+  text-align: center;
+}
+
+.play-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.play-btn.play { background: #60c080; color: #000; }
+.play-btn.pause { background: #a0c0ff; color: #000; }
+.play-btn.stop { background: #e06060; color: #fff; }
+
+.loop-btn {
+  padding: 4px 10px;
+  background: #0f3460;
+  border: 1px solid #1a4a80;
+  border-radius: 4px;
+  color: #a0a0b0;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+.loop-btn.active {
+  background: #1a3a6a;
+  border-color: #4080c0;
+  color: #80c0ff;
+}
+
+.preset-select {
+  background: #0f3460;
+  border: 1px solid #1a4a80;
+  border-radius: 4px;
+  color: #e0e0e0;
+  padding: 4px 8px;
+  font-size: 0.8rem;
+}
+
+.transport-divider {
+  width: 1px;
+  height: 24px;
+  background: #1a4a80;
+  flex-shrink: 0;
+}
