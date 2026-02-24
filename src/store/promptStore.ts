@@ -1,6 +1,14 @@
 import { create } from 'zustand';
 import { createId } from '../models/factories';
-import type { GenerationPrompt, PromptType, RequestStatus, SelectionRange } from '../models/types';
+import type {
+  EditLocalResult,
+  GenerateSongResult,
+  GenerationPrompt,
+  PromptType,
+  RequestStatus,
+  SelectionRange,
+  Song,
+} from '../models/types';
 import { sendPrompt } from '../services/mockPromptService';
 
 interface PromptState {
@@ -9,10 +17,15 @@ interface PromptState {
   status: RequestStatus;
   panelOpen: boolean;
   promptType: PromptType;
+  /** Structured result from the most recent successful generation. */
+  pendingGenerateSongResult: GenerateSongResult | null;
+  /** Structured result from the most recent successful local edit. */
+  pendingEditLocalResult: EditLocalResult | null;
   openPromptPanel: (type: PromptType) => void;
   closePromptPanel: () => void;
-  submitPrompt: (text: string, selection?: SelectionRange) => Promise<void>;
+  submitPrompt: (text: string, selection?: SelectionRange, currentSong?: Song | null) => Promise<void>;
   clearPrompts: () => void;
+  clearPendingResults: () => void;
 }
 
 export const usePromptStore = create<PromptState>((set, get) => ({
@@ -21,11 +34,13 @@ export const usePromptStore = create<PromptState>((set, get) => ({
   status: 'idle',
   panelOpen: false,
   promptType: 'GENERATE_SONG',
+  pendingGenerateSongResult: null,
+  pendingEditLocalResult: null,
 
   openPromptPanel: (type) => set({ panelOpen: true, promptType: type }),
   closePromptPanel: () => set({ panelOpen: false }),
 
-  submitPrompt: async (text, selection) => {
+  submitPrompt: async (text, selection, currentSong) => {
     const { promptType } = get();
     const prompt: GenerationPrompt = {
       id: createId(),
@@ -38,12 +53,27 @@ export const usePromptStore = create<PromptState>((set, get) => ({
     set({ activePrompt: prompt, status: 'loading', prompts: [...get().prompts, prompt] });
 
     try {
-      const response = await sendPrompt(promptType, text, selection);
+      const response = await sendPrompt(promptType, text, selection, currentSong);
       const updated: GenerationPrompt = { ...prompt, status: 'success', response };
+
+      // Cache structured results for UI consumption
+      let pendingGenerateSongResult = get().pendingGenerateSongResult;
+      let pendingEditLocalResult    = get().pendingEditLocalResult;
+
+      if (promptType === 'GENERATE_SONG') {
+        pendingGenerateSongResult = response.data as GenerateSongResult;
+        pendingEditLocalResult    = null;
+      } else if (promptType === 'EDIT_LOCAL') {
+        pendingEditLocalResult    = response.data as EditLocalResult;
+        pendingGenerateSongResult = null;
+      }
+
       set({
         activePrompt: updated,
         status: 'success',
         prompts: get().prompts.map((p) => (p.id === prompt.id ? updated : p)),
+        pendingGenerateSongResult,
+        pendingEditLocalResult,
       });
     } catch {
       const updated: GenerationPrompt = { ...prompt, status: 'error' };
@@ -56,4 +86,7 @@ export const usePromptStore = create<PromptState>((set, get) => ({
   },
 
   clearPrompts: () => set({ prompts: [], activePrompt: null, status: 'idle' }),
+
+  clearPendingResults: () =>
+    set({ pendingGenerateSongResult: null, pendingEditLocalResult: null }),
 }));

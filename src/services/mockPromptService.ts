@@ -1,29 +1,35 @@
 import { createId } from '../models/factories';
-import type { GenerationPrompt, PromptResponse, PromptType, SelectionRange } from '../models/types';
+import type { GenerationPrompt, PromptResponse, PromptType, SelectionRange, Song } from '../models/types';
+import { parsePrompt } from './promptParser';
+import { generateSong } from './harmonyGenerator';
+import { rewriteSelection } from './rewriteEngine';
 
-const MOCK_DELAY = 500;
+const MOCK_DELAY = 300;
 
 function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-async function mockGenerateSong(): Promise<unknown> {
-  return {
-    title: 'AI Generated Song',
-    sections: [
-      { label: 'Verse', chords: ['C', 'G', 'Am', 'F'] },
-      { label: 'Chorus', chords: ['F', 'C', 'G', 'G'] },
-    ],
-  };
+async function handleGenerateSong(text: string): Promise<unknown> {
+  const constraints = parsePrompt(text);
+  return generateSong(constraints);
 }
 
-async function mockEditLocal(selection?: SelectionRange): Promise<unknown> {
+async function handleEditLocal(text: string, song: Song | null, selection?: SelectionRange): Promise<unknown> {
+  const constraints = parsePrompt(text);
+  if (song && selection) {
+    return rewriteSelection(song, selection, constraints);
+  }
+  // Fallback when no song context available
   return {
-    selection,
-    edits: [
-      { barIndex: selection?.start.barIndex ?? 0, chord: 'Dm7' },
-      { barIndex: (selection?.start.barIndex ?? 0) + 1, chord: 'G7' },
+    alternatives: [
+      { id: createId(), label: 'A', bars: [], metadataTags: ['standard'] },
+      { id: createId(), label: 'B', bars: [], metadataTags: ['smoother'] },
+      { id: createId(), label: 'C', bars: [], metadataTags: ['colorful'] },
     ],
+    changedRange: selection,
+    diff: [],
+    constraints,
   };
 }
 
@@ -46,13 +52,21 @@ async function mockExplainSelection(selection?: SelectionRange): Promise<unknown
   };
 }
 
-async function mockReharmonise(selection?: SelectionRange): Promise<unknown> {
+async function mockReharmonise(text: string, selection?: SelectionRange): Promise<unknown> {
+  const constraints = parsePrompt(text || 'reharmonise');
+  // Use the simplify intent for reharmonise
+  const rewriteConstraints = { ...constraints, editIntent: 'more_colorful' as const };
+  if (selection) {
+    // Return same shape as EditLocalResult but framed as reharmonisation
+    return { selection, alternatives: [], constraints: rewriteConstraints };
+  }
   return {
     selection,
     alternatives: [
       ['Dm7', 'G7', 'Cmaj7', 'A7'],
       ['Em7b5', 'A7', 'Dm7', 'G7'],
     ],
+    constraints: rewriteConstraints,
   };
 }
 
@@ -64,7 +78,8 @@ async function mockSimplify(selection?: SelectionRange): Promise<unknown> {
   };
 }
 
-async function mockAlternatives(selection?: SelectionRange): Promise<unknown> {
+async function mockAlternatives(text: string, selection?: SelectionRange): Promise<unknown> {
+  const constraints = parsePrompt(text || 'alternatives');
   return {
     selection,
     progressions: [
@@ -72,35 +87,37 @@ async function mockAlternatives(selection?: SelectionRange): Promise<unknown> {
       { name: 'Option B', chords: ['C', 'Em', 'F', 'G'] },
       { name: 'Option C', chords: ['Am', 'F', 'C', 'G'] },
     ],
+    constraints,
   };
 }
 
 export async function sendPrompt(
   type: PromptType,
-  _text: string,
+  text: string,
   selection?: SelectionRange,
+  currentSong?: Song | null,
 ): Promise<PromptResponse> {
   await delay(MOCK_DELAY);
 
   let data: unknown;
   switch (type) {
     case 'GENERATE_SONG':
-      data = await mockGenerateSong();
+      data = await handleGenerateSong(text);
       break;
     case 'EDIT_LOCAL':
-      data = await mockEditLocal(selection);
+      data = await handleEditLocal(text, currentSong ?? null, selection);
       break;
     case 'EXPLAIN_SELECTION':
       data = await mockExplainSelection(selection);
       break;
     case 'REHARMONISE':
-      data = await mockReharmonise(selection);
+      data = await mockReharmonise(text, selection);
       break;
     case 'SIMPLIFY':
       data = await mockSimplify(selection);
       break;
     case 'ALTERNATIVES':
-      data = await mockAlternatives(selection);
+      data = await mockAlternatives(text, selection);
       break;
     default:
       data = {};
@@ -130,3 +147,4 @@ export function createPromptRecord(
     status: 'idle',
   };
 }
+

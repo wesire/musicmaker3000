@@ -51,3 +51,95 @@ export interface EditPrompt { id: string; promptId: string; selection: Selection
 
 // Project
 export interface Project { id: string; name: string; createdAt: string; updatedAt: string; songs: Song[]; currentSongId: string; versions: SongVersion[]; editHistory: EditOperation[]; promptHistory: GenerationPrompt[]; }
+
+// ─── Phase 2: Prompt Constraints ────────────────────────────────────────────
+
+export type StyleTag = 'pop'|'rock'|'jazz'|'folk'|'dreamy'|'cinematic'|'funk'|'blues'|'classical'|'country';
+export type MoodTag = 'happy'|'sad'|'energetic'|'calm'|'tense'|'uplifting'|'dark'|'mysterious'|'romantic';
+export type HarmonicComplexity = 'simple'|'moderate'|'complex'|'jazzy';
+export type ColorVocab = 'diatonic'|'modal_mixture'|'lush'|'jazzy'|'colorful'|'sparse';
+export type EditIntent = 'add_tension'|'simplify'|'brighten'|'darken'|'more_colorful'|'smoother_voice_leading'|'stronger_lift'|'less_predictable';
+export type CadenceStrength = 'weak'|'moderate'|'strong';
+
+export interface PromptConstraints {
+  raw: string;
+  styles: StyleTag[];
+  moods: MoodTag[];
+  complexity: HarmonicComplexity;
+  /** -1 = dark, 0 = neutral, 1 = bright */
+  brightness: number;
+  /** 0 = relaxed, 1 = very tense */
+  tension: number;
+  cadenceStrength: CadenceStrength;
+  colorVocab: ColorVocab[];
+  editIntent?: EditIntent;
+  sectionHints?: Partial<Record<SectionType, string>>;
+  beginnerFriendly: boolean;
+}
+
+// ─── Phase 2: Harmonic Analysis ─────────────────────────────────────────────
+
+export type HarmonicFunction = 'tonic'|'predominant'|'dominant'|'chromatic'|'ambiguous';
+export type CadenceType = 'authentic'|'half'|'plagal'|'deceptive'|'none';
+
+export interface ChordAnalysis {
+  chordId: string;
+  romanNumeral: string;
+  quality: string;
+  harmonicFunction: HarmonicFunction;
+  isBorrowed: boolean;
+  borrowedFrom?: string;
+  isSecondaryDominant: boolean;
+  secondaryTarget?: string;
+  cadenceRole?: CadenceType;
+  /** 0–1 confidence in the analysis */
+  confidence: number;
+  uncertain?: boolean;
+}
+
+export interface SectionAnalysis {
+  sectionId: string;
+  keyContext: KeyContext;
+  chordAnalyses: ChordAnalysis[];
+  cadences: Array<{ barIndex: number; type: CadenceType }>;
+  rationaleTags: string[];
+}
+
+// ─── Phase 2: Alternatives & Generation Results ──────────────────────────────
+
+export interface AlternativeOption {
+  id: string;
+  label: 'A'|'B'|'C';
+  /** Replacement bars for the selected range (EDIT_LOCAL) */
+  bars: Bar[];
+  metadataTags: string[];
+  analysis?: SectionAnalysis;
+}
+
+export interface SongAlternative {
+  id: string;
+  label: 'A'|'B'|'C';
+  song: Song;
+  metadataTags: string[];
+}
+
+export interface BarDiff {
+  sectionIndex: number;
+  barIndex: number;
+  before: ChordEvent[];
+  after: ChordEvent[];
+}
+
+export interface GenerateSongResult {
+  song: Song;
+  alternatives: SongAlternative[];
+  sectionAnalyses: SectionAnalysis[];
+  constraints: PromptConstraints;
+}
+
+export interface EditLocalResult {
+  alternatives: AlternativeOption[];
+  changedRange: SelectionRange;
+  diff: BarDiff[];
+  constraints: PromptConstraints;
+}
