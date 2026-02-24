@@ -8,10 +8,19 @@
   border-radius: 8px;
   padding: 10px 14px;
   display: flex;
+  flex-direction: column;
   gap: 8px;
-  align-items: center;
+  align-items: flex-start;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
   z-index: 50;
+  max-width: 90vw;
+}
+
+.contextual-actions > :not(.intent-row) {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
 }
 
 .contextual-label {
@@ -23,4 +32,18 @@
 .contextual-actions .btn {
   font-size: 0.8rem;
   padding: 5px 12px;
+}
+
+.intent-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  padding-top: 4px;
+  border-top: 1px solid #0f3460;
+  width: 100%;
+}
+
+.btn-xs {
+  font-size: 0.72rem;
+  padding: 3px 8px;
 }

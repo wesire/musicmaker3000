@@ -1,8 +1,9 @@
 import { create } from 'zustand';
 import { demoProjects } from '../fixtures/demoProjects';
 import { createId } from '../models/factories';
-import type { ChordEvent, EditOperation, KeyContext, Project, Section, Song, SongVersion } from '../models/types';
+import type { Bar, ChordEvent, EditOperation, KeyContext, Project, Section, SelectionRange, Song, SongVersion } from '../models/types';
 import { loadProject, saveProject } from '../services/persistenceService';
+import { applyAlternativeToBars } from '../services/rewriteEngine';
 
 interface ProjectState {
   project: Project | null;
@@ -19,6 +20,10 @@ interface ProjectState {
   saveToLocalStorage: () => void;
   loadFromLocalStorage: () => void;
   recordEditOperation: (op: EditOperation) => void;
+  /** Replace the current song with a fully generated song (from GENERATE_SONG). */
+  applySongGeneration: (song: Song, description?: string) => void;
+  /** Apply replacement bars to a selection range (from EDIT_LOCAL alternatives). */
+  applyLocalEdit: (selection: SelectionRange, bars: Bar[], description?: string) => void;
 }
 
 export const useProjectStore = create<ProjectState>((set, get) => ({
@@ -199,5 +204,42 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
         updatedAt: new Date().toISOString(),
       },
     });
+  },
+
+  applySongGeneration: (song, description) => {
+    const { project, saveVersion } = get();
+    if (!project) return;
+    // Auto-save a version before replacing
+    saveVersion(description ?? 'before AI generation');
+
+    const updatedProject: Project = {
+      ...project,
+      songs: project.songs.map((s) => (s.id === project.currentSongId ? song : s)),
+      updatedAt: new Date().toISOString(),
+    };
+    // If song is brand-new (different id), add it and make it current
+    if (!project.songs.find((s) => s.id === song.id)) {
+      updatedProject.songs = [...project.songs, song];
+      updatedProject.currentSongId = song.id;
+    }
+    set({ project: updatedProject, currentSong: song });
+  },
+
+  applyLocalEdit: (selection, bars, description) => {
+    const { project } = get();
+    if (!project) return;
+    const song = project.songs.find((s) => s.id === project.currentSongId);
+    if (!song) return;
+
+    // Auto-save a version before editing
+    get().saveVersion(description ?? 'before local edit');
+
+    const updatedSong = applyAlternativeToBars(song, selection, bars);
+    const updatedProject: Project = {
+      ...project,
+      songs: project.songs.map((s) => (s.id === song.id ? updatedSong : s)),
+      updatedAt: new Date().toISOString(),
+    };
+    set({ project: updatedProject, currentSong: updatedSong });
   },
 }));

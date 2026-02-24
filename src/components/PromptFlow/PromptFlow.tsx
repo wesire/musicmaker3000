@@ -2,19 +2,40 @@ import { useState } from 'react';
 import './PromptFlow.css';
 import PromptHistory from './PromptHistory';
 import { usePromptStore } from '../../store/promptStore';
+import { useProjectStore } from '../../store/projectStore';
 import { useSelectionStore } from '../../store/selectionStore';
+import type { AlternativeOption, SongAlternative } from '../../models/types';
 
 export default function PromptFlow() {
-  const { panelOpen, promptType, status, activePrompt, prompts, openPromptPanel, submitPrompt, clearPrompts } = usePromptStore();
+  const {
+    panelOpen, promptType, status, prompts,
+    pendingGenerateSongResult, pendingEditLocalResult,
+    openPromptPanel, submitPrompt, clearPrompts, clearPendingResults,
+  } = usePromptStore();
+  const { currentSong, applySongGeneration, applyLocalEdit } = useProjectStore();
   const { selection } = useSelectionStore();
   const [text, setText] = useState('');
   const [collapsed, setCollapsed] = useState(false);
 
   async function handleSubmit() {
     if (!text.trim() && promptType !== 'GENERATE_SONG') return;
-    await submitPrompt(text || 'Generate', selection ?? undefined);
+    await submitPrompt(text || 'Generate', selection ?? undefined, currentSong);
     setText('');
   }
+
+  function handleApplySong(song: typeof pendingGenerateSongResult extends null ? never : NonNullable<typeof pendingGenerateSongResult>['song']) {
+    applySongGeneration(song, 'AI generated song');
+    clearPendingResults();
+  }
+
+  function handleApplyLocalEdit(alt: AlternativeOption) {
+    if (!pendingEditLocalResult) return;
+    applyLocalEdit(pendingEditLocalResult.changedRange, alt.bars, `Local edit: ${alt.metadataTags.join(', ')}`);
+    clearPendingResults();
+  }
+
+  const showGenerateSongResult = promptType === 'GENERATE_SONG' && pendingGenerateSongResult;
+  const showEditLocalResult    = promptType === 'EDIT_LOCAL'    && pendingEditLocalResult;
 
   return (
     <div className="prompt-flow">
@@ -57,7 +78,7 @@ export default function PromptFlow() {
             </button>
           </div>
 
-          {status !== 'idle' && (
+          {status !== 'idle' && !showGenerateSongResult && !showEditLocalResult && (
             <div className={`prompt-status ${status}`}>
               {status === 'loading' && '⏳ Generating response...'}
               {status === 'success' && '✅ Response received'}
@@ -65,9 +86,63 @@ export default function PromptFlow() {
             </div>
           )}
 
-          {activePrompt?.response && (
-            <div className="prompt-response">
-              {JSON.stringify(activePrompt.response.data, null, 2)}
+          {/* ── GENERATE_SONG result ── */}
+          {showGenerateSongResult && (
+            <div className="prompt-result">
+              <div className="prompt-result-title">✅ Song generated — choose a variant to apply:</div>
+              <div className="prompt-alternatives">
+                <button
+                  className="btn btn-primary btn-sm"
+                  onClick={() => handleApplySong(pendingGenerateSongResult!.song)}
+                >
+                  ▶ Apply Primary
+                </button>
+                {pendingGenerateSongResult!.alternatives.map((alt: SongAlternative) => (
+                  <button
+                    key={alt.id}
+                    className="btn btn-secondary btn-sm"
+                    onClick={() => handleApplySong(alt.song)}
+                    title={alt.metadataTags.join(', ')}
+                  >
+                    Apply {alt.label} <span className="alt-tags">({alt.metadataTags.join(', ')})</span>
+                  </button>
+                ))}
+                <button className="btn btn-ghost btn-sm" onClick={clearPendingResults}>Discard</button>
+              </div>
+            </div>
+          )}
+
+          {/* ── EDIT_LOCAL result ── */}
+          {showEditLocalResult && (
+            <div className="prompt-result">
+              <div className="prompt-result-title">
+                ✅ {pendingEditLocalResult!.alternatives.length} alternatives — pick one to apply:
+              </div>
+              {pendingEditLocalResult!.diff.length > 0 && (
+                <div className="prompt-diff">
+                  {pendingEditLocalResult!.diff.map((d, i) => (
+                    <div key={i} className="diff-row">
+                      §{d.sectionIndex + 1} Bar {d.barIndex + 1}:&nbsp;
+                      <span className="diff-before">{d.before.map((c) => c.symbol).join(' ')}</span>
+                      {' → '}
+                      <span className="diff-after">{d.after.map((c) => c.symbol).join(' ')}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <div className="prompt-alternatives">
+                {pendingEditLocalResult!.alternatives.map((alt: AlternativeOption) => (
+                  <button
+                    key={alt.id}
+                    className="btn btn-secondary btn-sm"
+                    onClick={() => handleApplyLocalEdit(alt)}
+                    title={alt.metadataTags.join(', ')}
+                  >
+                    Apply {alt.label} <span className="alt-tags">({alt.metadataTags.join(', ')})</span>
+                  </button>
+                ))}
+                <button className="btn btn-ghost btn-sm" onClick={clearPendingResults}>Discard</button>
+              </div>
             </div>
           )}
 

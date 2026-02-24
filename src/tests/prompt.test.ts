@@ -42,9 +42,11 @@ describe('Prompt service', { timeout: 5000 }, () => {
     expect(Array.isArray(data.alternatives)).toBe(true);
   });
 
-  it('returns edits for EDIT_LOCAL', async () => {
+  it('returns alternatives for EDIT_LOCAL', async () => {
     const response = await sendPrompt('EDIT_LOCAL', 'Change these chords', undefined);
-    const data = response.data as { edits: unknown[] };
-    expect(Array.isArray(data.edits)).toBe(true);
+    const data = response.data as { alternatives: unknown[]; diff: unknown[]; changedRange: unknown };
+    expect(Array.isArray(data.alternatives)).toBe(true);
+    expect(data.alternatives).toHaveLength(3);
+    expect(Array.isArray(data.diff)).toBe(true);
   });
 });
