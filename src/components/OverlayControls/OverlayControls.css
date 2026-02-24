@@ -1,0 +1,40 @@
+.overlay-controls {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 5px;
+  padding: 6px 8px;
+  background: #0a1428;
+  border-bottom: 1px solid #0f3460;
+}
+
+.overlay-label {
+  font-size: 0.7rem;
+  color: #606080;
+  margin-right: 2px;
+  white-space: nowrap;
+}
+
+.overlay-toggle {
+  font-size: 0.7rem;
+  padding: 2px 7px;
+  border-radius: 10px;
+  border: 1px solid #2a3a5a;
+  background: #0f1e38;
+  color: #7090b8;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.1s;
+  white-space: nowrap;
+}
+
+.overlay-toggle:hover {
+  border-color: #4a70a8;
+  color: #a0c0e0;
+}
+
+.overlay-toggle.active {
+  background: #1a3a6a;
+  border-color: #4a80c0;
+  color: #c0e0ff;
+}

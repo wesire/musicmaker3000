@@ -69,11 +69,41 @@ Selection-aware local bar rewriter.
 - `projectStore`: `applySongGeneration(song)`, `applyLocalEdit(selection, bars)`
 - `promptStore`: `pendingGenerateSongResult`, `pendingEditLocalResult`, `clearPendingResults()`
 
-### UI Flow (Phase 2)
-1. User types a style/mood prompt and submits GENERATE_SONG
-2. `PromptFlow` receives `GenerateSongResult` and shows **Apply Primary / Apply B / Apply C** buttons
-3. User clicks Apply → `projectStore.applySongGeneration()` replaces current song (auto-saves version)
-4. User selects bars and submits EDIT_LOCAL (or clicks an intent button in `ContextualActions`)
-5. `PromptFlow` shows A/B/C alternatives with bar diff
-6. User clicks Apply → `projectStore.applyLocalEdit()` replaces only selected bars (auto-saves version)
-7. Revert is available via the Version Panel
+## Phase 3: Explainable Harmony & Educational Overlays
+
+### Services
+
+#### `explanationEngine.ts`
+Grounded explanation generator for selected bar ranges.
+- Consumes computed `SectionAnalysis` from `analysisEngine.ts` — never fabricates certainty
+- Produces `ExplanationResult`: summary, per-chord breakdown, style fit, cadence explanation, substitutions, uncertainty notices
+- Per-chord `ExplanationBreakdownItem`: Roman numeral, harmonic function, detail, tension/release role, connection-to-next annotation
+- Substitution alternatives: lighter/diatonic, richer (extensions), smoother (voice-leading) options with rationale and tradeoff
+- Uncertainty surfaced honestly: flags chords with `uncertain=true` or confidence < 0.7 in `uncertaintyNotices[]`
+- Style fit reasoning derived from `PromptConstraints` tags (pop, jazz, folk, dreamy, etc.)
+
+### Data Model Additions (Phase 3)
+- `ExplanationBreakdownItem` — per-chord explanation: Roman numeral, function, detail, tension role, connection
+- `SubstitutionOption` — alternative chord with tag (`lighter`/`richer`/`smoother`/`standard`), rationale, tradeoff
+- `ExplanationResult` — full explanation output: summary, breakdown[], styleFit?, cadenceExplanation?, substitutions[], uncertaintyNotices[]
+- `OverlaySettings` — boolean flags for all educational overlay types
+
+### Store Updates (Phase 3)
+- `promptStore`: `pendingExplanationResult`, `clearExplanationResult()`
+- `overlayStore`: `settings: OverlaySettings`, `toggleOverlay(key)`, `setOverlay(key, value)`
+
+### UI Flow (Phase 3)
+1. User selects bars/chords in the timeline
+2. **ContextualActions** toolbar appears; clicking **💡 Explain** immediately submits to the explanation engine
+3. **ExplanationPanel** appears in the right panel with grounded harmonic analysis:
+   - Summary (progression, key, cadence type, style fit)
+   - Per-chord breakdown (Roman numeral, function, tension role, connections)
+   - Suggested alternatives (lighter/richer/smoother) with rationale and tradeoffs
+   - Uncertainty notices when analysis is ambiguous
+4. Follow-up edits (e.g. "make this less tense") can be submitted directly in the panel — routed to `EDIT_LOCAL`
+5. **OverlayControls** toolbar in the timeline toggles educational annotations:
+   - Roman numerals and Nashville numbers per chord (computed inline via `analyzeChord`)
+   - Harmonic function tags per chord (T/P/D/C)
+   - Cadence markers at end of phrases (authentic, half, plagal, deceptive)
+   - Section labels and per-section key context
+6. Alternatives (Apply A/B/C) integrate with the existing apply/revert/versioning workflow

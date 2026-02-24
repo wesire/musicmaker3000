@@ -17,24 +17,44 @@ export default function ContextualActions() {
   const { currentSong } = useProjectStore();
   const { selection, clearSelection } = useSelectionStore();
 
+  async function handleExplain() {
+    openPromptPanel('EXPLAIN_SELECTION');
+    await submitPrompt('', selection ?? undefined, currentSong);
+  }
+
   async function handleEditIntent(intentText: string) {
     openPromptPanel('EDIT_LOCAL');
     await submitPrompt(intentText, selection ?? undefined, currentSong);
   }
 
+  async function handleReharmonise() {
+    openPromptPanel('EDIT_LOCAL');
+    await submitPrompt('more colorful chords in the selected bars', selection ?? undefined, currentSong);
+  }
+
+  async function handleSimplify() {
+    openPromptPanel('EDIT_LOCAL');
+    await submitPrompt('simplify the selected bars', selection ?? undefined, currentSong);
+  }
+
+  async function handleAlternatives() {
+    openPromptPanel('EDIT_LOCAL');
+    await submitPrompt('alternatives', selection ?? undefined, currentSong);
+  }
+
   return (
     <div className="contextual-actions">
       <span className="contextual-label">Selection:</span>
-      <button className="btn btn-secondary" onClick={() => openPromptPanel('EXPLAIN_SELECTION')}>
+      <button className="btn btn-secondary" onClick={handleExplain}>
         💡 Explain
       </button>
-      <button className="btn btn-secondary" onClick={() => openPromptPanel('REHARMONISE')}>
+      <button className="btn btn-secondary" onClick={handleReharmonise}>
         🎼 Reharmonise
       </button>
-      <button className="btn btn-secondary" onClick={() => openPromptPanel('SIMPLIFY')}>
+      <button className="btn btn-secondary" onClick={handleSimplify}>
         ✂️ Simplify
       </button>
-      <button className="btn btn-secondary" onClick={() => openPromptPanel('ALTERNATIVES')}>
+      <button className="btn btn-secondary" onClick={handleAlternatives}>
         🔀 Alternatives
       </button>
       <button className="btn btn-secondary" onClick={() => openPromptPanel('EDIT_LOCAL')}>

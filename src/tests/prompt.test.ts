@@ -17,9 +17,12 @@ describe('Prompt service', { timeout: 5000 }, () => {
       end: { sectionIndex: 0, barIndex: 1 },
     });
     expect(response.type).toBe('EXPLAIN_SELECTION');
-    const data = response.data as { items: unknown[] };
-    expect(Array.isArray(data.items)).toBe(true);
-    expect(data.items.length).toBeGreaterThan(0);
+    const data = response.data as { summary: string; breakdown: unknown[]; substitutions: unknown[]; uncertaintyNotices: unknown[] };
+    expect(typeof data.summary).toBe('string');
+    expect(data.summary.length).toBeGreaterThan(0);
+    expect(Array.isArray(data.breakdown)).toBe(true);
+    expect(Array.isArray(data.substitutions)).toBe(true);
+    expect(Array.isArray(data.uncertaintyNotices)).toBe(true);
   });
 
   it('returns alternatives for ALTERNATIVES', async () => {

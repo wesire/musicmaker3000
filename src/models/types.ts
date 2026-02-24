@@ -143,3 +143,49 @@ export interface EditLocalResult {
   diff: BarDiff[];
   constraints: PromptConstraints;
 }
+
+// ─── Phase 3: Explanation ────────────────────────────────────────────────────
+
+export interface SubstitutionOption {
+  id: string;
+  originalChordId: string;
+  substituteSymbol: string;
+  substituteRomanNumeral: string;
+  tag: 'lighter' | 'richer' | 'smoother' | 'standard';
+  rationale: string;
+  tradeoff: string;
+}
+
+export interface ExplanationBreakdownItem {
+  chordId: string;
+  symbol: string;
+  romanNumeral: string;
+  harmonicFunction: HarmonicFunction;
+  detail: string;
+  tensionRole?: string;
+  connectionToNext?: string;
+  uncertain?: boolean;
+  confidence?: number;
+}
+
+export interface ExplanationResult {
+  selectionRange: SelectionRange;
+  summary: string;
+  breakdown: ExplanationBreakdownItem[];
+  styleFit?: string;
+  cadenceExplanation?: string;
+  substitutions: SubstitutionOption[];
+  uncertaintyNotices: string[];
+}
+
+// ─── Phase 3: Overlay Settings ───────────────────────────────────────────────
+
+export interface OverlaySettings {
+  showChordSymbols: boolean;
+  showRomanNumerals: boolean;
+  showFunctionTags: boolean;
+  showSectionLabels: boolean;
+  showKeyContext: boolean;
+  showNashvilleNumbers: boolean;
+  showCadenceMarkers: boolean;
+}
