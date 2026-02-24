@@ -152,6 +152,8 @@
 .diff-row { color: #a0a0b0; }
 .diff-before { color: #e06060; text-decoration: line-through; }
 .diff-after  { color: #60c080; }
+
+.prompt-history-list {
   display: flex;
   flex-direction: column;
   gap: 6px;
