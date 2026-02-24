@@ -76,3 +76,119 @@ describe('Transport store', () => {
     expect(usePlaybackStore.getState().transport.transpose).toBe(12);
   });
 });
+
+// ─── Phase 4: Quality Mode ────────────────────────────────────────────────────
+
+describe('Quality mode', () => {
+  beforeEach(() => {
+    usePlaybackStore.getState().setQualityMode('sketch');
+  });
+
+  it('starts in sketch mode by default', () => {
+    usePlaybackStore.setState({ qualityMode: 'sketch' });
+    expect(usePlaybackStore.getState().qualityMode).toBe('sketch');
+  });
+
+  it('switches to enhanced mode', () => {
+    usePlaybackStore.getState().setQualityMode('enhanced');
+    expect(usePlaybackStore.getState().qualityMode).toBe('enhanced');
+  });
+
+  it('switches to pro mode', () => {
+    usePlaybackStore.getState().setQualityMode('pro');
+    expect(usePlaybackStore.getState().qualityMode).toBe('pro');
+  });
+
+  it('updates arrangement options when switching to enhanced', () => {
+    usePlaybackStore.getState().setQualityMode('enhanced');
+    const { arrangementOptions } = usePlaybackStore.getState();
+    expect(arrangementOptions.density).toBe('medium');
+    expect(arrangementOptions.pattern).toBe('arpeggio');
+  });
+
+  it('updates arrangement options when switching to pro', () => {
+    usePlaybackStore.getState().setQualityMode('pro');
+    const { arrangementOptions } = usePlaybackStore.getState();
+    expect(arrangementOptions.density).toBe('rich');
+  });
+
+  it('resets to sketch defaults when switching back to sketch', () => {
+    usePlaybackStore.getState().setQualityMode('enhanced');
+    usePlaybackStore.getState().setQualityMode('sketch');
+    const { arrangementOptions } = usePlaybackStore.getState();
+    expect(arrangementOptions.density).toBe('simple');
+    expect(arrangementOptions.pattern).toBe('block');
+    expect(arrangementOptions.humanizeAmount).toBe(0);
+  });
+
+  it('persists quality mode after a stop()', () => {
+    usePlaybackStore.getState().setQualityMode('enhanced');
+    usePlaybackStore.getState().stop();
+    expect(usePlaybackStore.getState().qualityMode).toBe('enhanced');
+  });
+});
+
+// ─── Phase 4: Arrangement Options ────────────────────────────────────────────
+
+describe('Arrangement options', () => {
+  it('setArrangementOptions merges partial options', () => {
+    usePlaybackStore.getState().setQualityMode('sketch');
+    usePlaybackStore.getState().setArrangementOptions({ pattern: 'strum' });
+    const { arrangementOptions } = usePlaybackStore.getState();
+    expect(arrangementOptions.pattern).toBe('strum');
+    // Other options preserved
+    expect(arrangementOptions.density).toBe('simple');
+  });
+
+  it('can override density independently', () => {
+    usePlaybackStore.getState().setQualityMode('sketch');
+    usePlaybackStore.getState().setArrangementOptions({ density: 'rich' });
+    expect(usePlaybackStore.getState().arrangementOptions.density).toBe('rich');
+  });
+
+  it('can override humanizeAmount', () => {
+    usePlaybackStore.getState().setArrangementOptions({ humanizeAmount: 0.7 });
+    expect(usePlaybackStore.getState().arrangementOptions.humanizeAmount).toBe(0.7);
+  });
+});
+
+// ─── Phase 4: Audition Mode ───────────────────────────────────────────────────
+
+describe('Audition mode', () => {
+  beforeEach(() => {
+    usePlaybackStore.getState().stopAudition();
+  });
+
+  it('starts with no audition variant', () => {
+    expect(usePlaybackStore.getState().auditionVariantId).toBeNull();
+  });
+
+  it('startAudition sets the variant id', () => {
+    usePlaybackStore.getState().startAudition('B');
+    expect(usePlaybackStore.getState().auditionVariantId).toBe('B');
+  });
+
+  it('startAudition enables loop automatically', () => {
+    usePlaybackStore.getState().startAudition('A');
+    expect(usePlaybackStore.getState().transport.loopEnabled).toBe(true);
+  });
+
+  it('stopAudition clears the variant id', () => {
+    usePlaybackStore.getState().startAudition('C');
+    usePlaybackStore.getState().stopAudition();
+    expect(usePlaybackStore.getState().auditionVariantId).toBeNull();
+  });
+
+  it('stopAudition disables loop', () => {
+    usePlaybackStore.getState().startAudition('A');
+    usePlaybackStore.getState().stopAudition();
+    expect(usePlaybackStore.getState().transport.loopEnabled).toBe(false);
+  });
+
+  it('can switch between variants', () => {
+    usePlaybackStore.getState().startAudition('A');
+    usePlaybackStore.getState().startAudition('B');
+    expect(usePlaybackStore.getState().auditionVariantId).toBe('B');
+  });
+});
+
